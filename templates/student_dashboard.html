@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard • Abhinav Public School</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .glass { background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); }
+        .sidebar-active { border-left: 4px solid #4f46e5; background: rgba(79,70,229,0.1); }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="w-72 bg-zinc-900 flex flex-col">
+            <div class="p-8 border-b border-white/10">
+                <div class="flex items-center gap-x-3">
+                    <i class="fa-solid fa-school text-4xl"></i>
+                    <h1 class="text-2xl font-semibold">Abhinav Public School</h1>
+                </div>
+                <p class="text-xs text-white/50 mt-1">Student Portal</p>
+            </div>
+            
+            <div class="flex-1 px-4 py-6 space-y-1" id="sidebar">
+                <button onclick="loadSection('profile')" class="sidebar-active w-full text-left px-6 py-4 rounded-3xl flex items-center gap-x-4 hover:bg-white/10">
+                    <i class="fa-solid fa-user w-5"></i> Profile
+                </button>
+                <button onclick="loadSection('result')" class="w-full text-left px-6 py-4 rounded-3xl flex items-center gap-x-4 hover:bg-white/10">
+                    <i class="fa-solid fa-chart-bar w-5"></i> Check Result
+                </button>
+                <button onclick="loadSection('attendance')" class="w-full text-left px-6 py-4 rounded-3xl flex items-center gap-x-4 hover:bg-white/10">
+                    <i class="fa-solid fa-calendar-check w-5"></i> Attendance
+                </button>
+                <button onclick="logout()" class="w-full text-left px-6 py-4 rounded-3xl flex items-center gap-x-4 hover:bg-red-500/10 text-red-400 mt-auto">
+                    <i class="fa-solid fa-sign-out w-5"></i> Logout
+                </button>
+            </div>
+            
+            <div class="p-6 text-xs text-white/40 border-t border-white/10">
+                Welcome, <span id="student-name-sidebar" class="font-medium"></span>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <div id="content-area" class="max-w-5xl mx-auto"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentStudent = null;
+        let currentMarks = null;
+        
+        async function fetchData() {
+            const profileRes = await fetch("/api/student/profile");
+            currentStudent = await profileRes.json();
+            document.getElementById("student-name-sidebar").innerText = currentStudent.name;
+            
+            const marksRes = await fetch("/api/student/marks");
+            currentMarks = await marksRes.json();
+        }
+        
+        function loadSection(section) {
+            document.querySelectorAll('#sidebar button').forEach(b => b.classList.remove('sidebar-active'));
+            event.currentTarget.classList.add('sidebar-active');
+            
+            const area = document.getElementById("content-area");
+            
+            if (section === "profile") {
+                area.innerHTML = `
+                    <div class="glass rounded-3xl p-8">
+                        <h2 class="text-4xl font-semibold mb-8">My Profile</h2>
+                        <div class="grid grid-cols-2 gap-8">
+                            <div><span class="text-white/50">Name</span><p class="text-3xl">${currentStudent.name}</p></div>
+                            <div><span class="text-white/50">Roll No</span><p class="text-3xl">${currentStudent.roll_no}</p></div>
+                            <div><span class="text-white/50">Class</span><p class="text-3xl">${currentStudent.class_name} - ${currentStudent.section}</p></div>
+                            <div><span class="text-white/50">Father's Name</span><p class="text-3xl">Mr. Singh</p></div>
+                        </div>
+                    </div>`;
+            } else if (section === "result") {
+                let html = `<div class="glass rounded-3xl p-8"><h2 class="text-4xl font-semibold mb-6">Result 2026</h2>`;
+                
+                html += `<div class="grid grid-cols-5 gap-4 mb-10">`;
+                currentMarks.marks.forEach(m => {
+                    html += `<div class="text-center"><div class="text-4xl font-semibold">${m.marks}</div><div class="text-xs text-white/50">${m.subject}</div></div>`;
+                });
+                html += `</div>`;
+                
+                const perc = currentMarks.percentage;
+                let feedback = "", emoji = "", confettiFn = "";
+                
+                if (perc < 40) {
+                    feedback = `<div class="text-red-400 text-7xl mb-4 animate-pulse">😢</div><p class="text-2xl">Don't give up! This is just a step towards success. Work harder and come back stronger!</p>`;
+                } else if (perc > 75) {
+                    feedback = `<div class="text-yellow-400 text-7xl mb-4">🎉</div><p class="text-2xl">Excellent performance! Keep growing and shining bright!</p>`;
+                    confettiFn = `confetti({particleCount: 200, spread: 70, origin: { y: 0.6 }});`;
+                } else {
+                    feedback = `<p class="text-2xl">Good effort! Keep improving every day.</p>`;
+                }
+                
+                html += `
+                    <div class="flex justify-between items-end mb-8">
+                        <div>
+                            <div class="text-xs uppercase">Percentage</div>
+                            <div class="text-7xl font-semibold">${perc}%</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs uppercase">Grade</div>
+                            <div class="text-7xl font-semibold">${currentMarks.grade}</div>
+                        </div>
+                    </div>
+                    <div class="h-3 bg-white/20 rounded-3xl mb-8 overflow-hidden">
+                        <div class="h-3 bg-gradient-to-r from-indigo-400 to-violet-400" style="width: ${perc}%"></div>
+                    </div>
+                    <div class="text-center">${feedback}</div>
+                    <button onclick="downloadPDF()" class="mt-10 w-full py-6 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-3xl text-xl font-semibold">📄 Download Marksheet as PDF</button>`;
+                
+                area.innerHTML = html;
+                if (confettiFn) eval(confettiFn);
+            } else if (section === "attendance") {
+                area.innerHTML = `
+                    <div class="glass rounded-3xl p-8">
+                        <h2 class="text-4xl font-semibold mb-8">Attendance</h2>
+                        <div class="text-7xl font-semibold">${currentMarks ? '92%' : '92%'} <span class="text-xl font-normal text-white/50">Overall</span></div>
+                        <div class="mt-8">Monthly progress coming soon in full version.</div>
+                    </div>`;
+            }
+        }
+        
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(22);
+            doc.text("Abhinav Public School", 20, 30);
+            doc.setFontSize(14);
+            doc.text(`Marksheet - ${currentStudent.name} (${currentStudent.roll_no})`, 20, 50);
+            
+            let y = 80;
+            currentMarks.marks.forEach(m => {
+                doc.text(`${m.subject}: ${m.marks}/100`, 20, y);
+                y += 12;
+            });
+            
+            doc.text(`Percentage: ${currentMarks.percentage}%`, 20, y + 10);
+            doc.text(`Grade: ${currentMarks.grade}`, 20, y + 25);
+            doc.save(`marksheet_${currentStudent.roll_no}.pdf`);
+            showToast("Marksheet downloaded!");
+        }
+        
+        function logout() {
+            window.location.href = "/logout";
+        }
+        
+        function showToast(msg) {
+            const t = document.createElement("div");
+            t.className = "fixed bottom-8 right-8 bg-emerald-500 text-white px-8 py-4 rounded-3xl shadow-2xl";
+            t.textContent = msg;
+            document.body.append(t);
+            setTimeout(() => t.remove(), 2500);
+        }
+        
+        // Initialize dashboard
+        window.onload = async () => {
+            await fetchData();
+            loadSection("profile");
+        };
+    </script>
+</body>
+</html>

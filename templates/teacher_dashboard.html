@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard • Abhinav Public School</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-zinc-950 text-white">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="w-72 bg-zinc-900 p-8 flex flex-col">
+            <div class="flex items-center gap-x-3 mb-12">
+                <i class="fa-solid fa-chalkboard-teacher text-4xl"></i>
+                <h1 class="text-2xl font-semibold">Teacher Dashboard</h1>
+            </div>
+            
+            <button onclick="loadTeacherSection('add-student')" class="flex items-center gap-x-4 px-6 py-5 rounded-3xl hover:bg-white/10 w-full text-left mb-2">➕ Add Student</button>
+            <button onclick="loadTeacherSection('enter-marks')" class="flex items-center gap-x-4 px-6 py-5 rounded-3xl hover:bg-white/10 w-full text-left mb-2">📝 Enter / Update Marks</button>
+            <button onclick="loadTeacherSection('students')" class="flex items-center gap-x-4 px-6 py-5 rounded-3xl hover:bg-white/10 w-full text-left">👥 View All Students</button>
+            
+            <button onclick="logout()" class="mt-auto flex items-center gap-x-4 px-6 py-5 rounded-3xl hover:bg-red-500/10 text-red-400">Logout</button>
+        </div>
+        
+        <div class="flex-1 p-10" id="teacher-content"></div>
+    </div>
+
+    <script>
+        async function loadTeacherSection(section) {
+            const area = document.getElementById("teacher-content");
+            
+            if (section === "students") {
+                const res = await fetch("/api/teacher/students");
+                const students = await res.json();
+                
+                let html = `<h2 class="text-4xl mb-8">All Students</h2><table class="w-full"><thead><tr class="text-white/50"><th class="text-left pb-4">Roll No</th><th class="text-left pb-4">Name</th><th class="text-left pb-4">Class</th></tr></thead><tbody>`;
+                students.forEach(s => {
+                    html += `<tr class="border-t border-white/10"><td class="py-5">${s.roll_no}</td><td class="py-5">${s.name}</td><td class="py-5">${s.class_name}-${s.section}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+                area.innerHTML = html;
+            } else if (section === "add-student") {
+                area.innerHTML = `
+                    <div class="max-w-md">
+                        <h2 class="text-4xl mb-8">Add New Student</h2>
+                        <form onsubmit="addStudent(event)" class="space-y-6">
+                            <input id="roll" placeholder="Roll No (S002)" class="w-full px-6 py-6 rounded-3xl bg-white/10 border border-white/30 focus:border-white outline-none" required>
+                            <input id="sname" placeholder="Full Name" class="w-full px-6 py-6 rounded-3xl bg-white/10 border border-white/30 focus:border-white outline-none" required>
+                            <div class="grid grid-cols-2 gap-4">
+                                <input id="class" placeholder="Class (10)" class="px-6 py-6 rounded-3xl bg-white/10 border border-white/30 focus:border-white outline-none" required>
+                                <input id="section" placeholder="Section (A)" class="px-6 py-6 rounded-3xl bg-white/10 border border-white/30 focus:border-white outline-none" required>
+                            </div>
+                            <button type="submit" class="w-full py-6 bg-gradient-to-r from-violet-500 to-indigo-600 rounded-3xl text-xl font-semibold">Add Student</button>
+                        </form>
+                    </div>`;
+            } else if (section === "enter-marks") {
+                const res = await fetch("/api/teacher/students");
+                const students = await res.json();
+                
+                let options = students.map(s => `<option value="${s.id}">${s.roll_no} - ${s.name}</option>`).join("");
+                
+                area.innerHTML = `
+                    <div class="max-w-2xl">
+                        <h2 class="text-4xl mb-8">Enter Marks</h2>
+                        <select id="student-select" class="w-full px-6 py-6 rounded-3xl bg-white/10 border border-white/30 mb-8">${options}</select>
+                        <div id="marks-form" class="grid grid-cols-2 gap-6"></div>
+                        <button onclick="saveMarks()" class="mt-8 w-full py-6 bg-gradient-to-r from-violet-500 to-indigo-600 rounded-3xl text-xl font-semibold">Save Marks</button>
+                    </div>`;
+                
+                // Populate subjects
+                const subjects = ["English","Hindi","Mathematics","Science","Social Science"];
+                let formHtml = "";
+                subjects.forEach(sub => {
+                    formHtml += `<div><label class="block text-xs mb-2">${sub}</label><input type="number" id="mark-${sub}" value="85" class="w-full px-6 py-6 rounded-3xl bg-white/10 border border-white/30 text-3xl text-center"></div>`;
+                });
+                document.getElementById("marks-form").innerHTML = formHtml;
+            }
+        }
+        
+        async function addStudent(e) {
+            e.preventDefault();
+            const data = {
+                roll_no: document.getElementById("roll").value,
+                name: document.getElementById("sname").value,
+                class_name: document.getElementById("class").value,
+                section: document.getElementById("section").value
+            };
+            const res = await fetch("/api/teacher/add_student", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(data)});
+            const json = await res.json();
+            alert(json.message);
+            if (json.success) loadTeacherSection("students");
+        }
+        
+        async function saveMarks() {
+            const studentId = document.getElementById("student-select").value;
+            const marks = {};
+            document.querySelectorAll("#marks-form input").forEach(input => {
+                const sub = input.id.replace("mark-","");
+                marks[sub] = input.value;
+            });
+            const res = await fetch("/api/teacher/enter_marks", {
+                method: "POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({student_id: studentId, marks})
+            });
+            const json = await res.json();
+            alert(json.message);
+        }
+        
+        function logout() {
+            window.location.href = "/logout";
+        }
+        
+        window.onload = () => loadTeacherSection("students");
+    </script>
+</body>
+</html>

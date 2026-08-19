@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abhinav Public School</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --primary: linear-gradient(135deg, #4f46e5, #7c3aed);
+        }
+        
+        * {
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+        
+        .navbar-link {
+            position: relative;
+        }
+        
+        .navbar-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #fff;
+        }
+        
+        .navbar-link:hover:after {
+            width: 100%;
+        }
+        
+        .modal {
+            animation: modalPop 0.3s ease forwards;
+        }
+        
+        @keyframes modalPop {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+        }
+        
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-900 font-inter">
+    <!-- NAVBAR -->
+    <nav class="glass border-b border-white/20 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-x-3">
+                <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-indigo-600 text-3xl shadow-inner">
+                    <i class="fa-solid fa-school"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-semibold tracking-[-1px] text-white" style="font-family: 'Space Grotesk', sans-serif;">Abhinav Public School</h1>
+                    <p class="text-xs text-white/70 -mt-1">Empowering Students for a Better Tomorrow</p>
+                </div>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-x-8 text-white">
+                <a href="#" onclick="document.getElementById('home-section').scrollIntoView({behavior: 'smooth'})" class="navbar-link font-medium">Home</a>
+                <a href="#" onclick="document.getElementById('features-section').scrollIntoView({behavior: 'smooth'})" class="navbar-link font-medium">Features</a>
+                <a href="#" class="navbar-link font-medium">Admissions</a>
+                <a href="#" class="navbar-link font-medium">About Us</a>
+            </div>
+            
+            <div class="flex items-center gap-x-4">
+                <!-- Student Login Button -->
+                <button onclick="showLoginModal('student')" 
+                        class="px-6 py-2.5 bg-white text-indigo-700 hover:bg-white/90 font-semibold rounded-2xl flex items-center gap-x-2 shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-user-graduate"></i>
+                    <span>Student Login</span>
+                </button>
+                
+                <!-- Teacher Login Button -->
+                <button onclick="showLoginModal('teacher')" 
+                        class="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 font-semibold rounded-2xl flex items-center gap-x-2 backdrop-blur-md">
+                    <i class="fa-solid fa-chalkboard-teacher"></i>
+                    <span>Teacher Login</span>
+                </button>
+                
+                <button onclick="toggleMobileMenu()" class="md:hidden text-white text-2xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden glass border-t border-white/20 px-6 py-4">
+            <div class="flex flex-col gap-y-4 text-white">
+                <a href="#" onclick="document.getElementById('home-section').scrollIntoView({behavior: 'smooth'});toggleMobileMenu()" class="font-medium">Home</a>
+                <a href="#" onclick="document.getElementById('features-section').scrollIntoView({behavior: 'smooth'});toggleMobileMenu()" class="font-medium">Features</a>
+                <a href="#" class="font-medium">Admissions</a>
+                <a href="#" class="font-medium">About Us</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section id="home-section" class="hero-bg min-h-screen flex items-center relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+            <div class="space-y-8">
+                <div class="inline-flex items-center gap-x-2 bg-white/20 text-white text-sm font-medium px-5 py-2 rounded-3xl backdrop-blur-md">
+                    <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                    Academic Year 2026-27 • Now Open
+                </div>
+                
+                <h1 class="text-6xl md:text-7xl font-semibold tracking-[-3px] leading-none text-white" style="font-family: 'Space Grotesk', sans-serif;">
+                    Abhinav Public School
+                </h1>
+                <p class="text-2xl text-white/90 max-w-lg">Empowering Students for a Better Tomorrow</p>
+                
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="showLoginModal('student')" 
+                            class="px-8 py-5 bg-white text-indigo-700 text-xl font-semibold rounded-3xl flex items-center gap-x-3 hover:scale-105 shadow-2xl shadow-indigo-500/40">
+                        <i class="fa-solid fa-user-graduate text-2xl"></i>
+                        Student Portal
+                    </button>
+                    <button onclick="showLoginModal('teacher')" 
+                            class="px-8 py-5 border-2 border-white text-white text-xl font-semibold rounded-3xl flex items-center gap-x-3 hover:bg-white/10">
+                        <i class="fa-solid fa-chalkboard-teacher text-2xl"></i>
+                        Teacher Dashboard
+                    </button>
+                </div>
+                
+                <div class="flex items-center gap-x-8 text-white/80">
+                    <div class="flex -space-x-4">
+                        <div class="w-8 h-8 bg-white/30 backdrop-blur rounded-2xl flex items-center justify-center text-xs font-bold ring-2 ring-white/30">98%</div>
+                        <div class="w-8 h-8 bg-white/30 backdrop-blur rounded-2xl flex items-center justify-center text-xs font-bold ring-2 ring-white/30">4.9</div>
+                    </div>
+                    <div>
+                        <p class="text-sm">Trusted by 1800+ students &amp; parents</p>
+                        <div class="flex text-yellow-400 text-xl">★★★★★</div>
+                    </div>
+                </div>
+                
+                <!-- Trust logos -->
+                <div class="flex items-center gap-x-8 opacity-70">
+                    <div class="text-white text-sm font-medium">CBSE AFFILIATED</div>
+                    <div class="text-white text-sm font-medium">ISO 9001:2015</div>
+                    <div class="text-white text-sm font-medium">NATIONAL AWARD 2025</div>
+                </div>
+            </div>
+            
+            <!-- Hero Visual -->
+            <div class="relative hidden md:block">
+                <div class="absolute -top-10 -right-10 w-96 h-96 bg-white/10 rounded-[4rem] rotate-12 backdrop-blur-3xl"></div>
+                <div class="glass rounded-3xl p-8 shadow-2xl relative z-10">
+                    <div class="bg-white/90 rounded-3xl p-6 text-zinc-900">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <p class="text-emerald-600 font-semibold">LIVE CLASS IN PROGRESS</p>
+                                <h3 class="text-3xl font-semibold">Mathematics • Grade 10</h3>
+                            </div>
+                            <div class="px-4 py-1 bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-2xl">28 students online</div>
+                        </div>
+                        
+                        <div class="h-64 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl flex items-center justify-center text-7xl mb-6">
+                            📐
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div class="bg-white rounded-2xl py-4 text-sm">
+                                <i class="fa-solid fa-chart-line text-indigo-600 mb-1"></i><br>
+                                Today's Attendance<br>
+                                <span class="font-semibold text-2xl">96%</span>
+                            </div>
+                            <div class="bg-white rounded-2xl py-4 text-sm">
+                                <i class="fa-solid fa-book text-purple-600 mb-1"></i><br>
+                                Homework Due<br>
+                                <span class="font-semibold text-2xl">3</span>
+                            </div>
+                            <div class="bg-white rounded-2xl py-4 text-sm">
+                                <i class="fa-solid fa-trophy text-amber-500 mb-1"></i><br>
+                                Topper<br>
+                                <span class="font-semibold text-2xl">Aradhya</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Floating badges -->
+                <div class="absolute top-12 -left-6 glass px-6 py-3 rounded-3xl flex items-center gap-x-3 text-white shadow-2xl">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <div>
+                        <p class="text-xs">Next Exam</p>
+                        <p class="font-semibold">Mid-Term • 12 Apr</p>
+                    </div>
+                </div>
+                
+                <div class="absolute bottom-12 right-12 bg-white text-zinc-900 px-5 py-3 rounded-3xl flex items-center gap-x-2 shadow-2xl">
+                    <div class="text-emerald-500">
+                        <i class="fa-solid fa-circle-check text-2xl"></i>
+                    </div>
+                    <div class="text-sm font-semibold">100% Digital<br>Learning Platform</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-10 left-1/2 flex flex-col items-center text-white/70 text-sm">
+            <div class="animate-bounce">↓</div>
+            <p>Scroll to explore</p>
+        </div>
+        
+        <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-zinc-950 to-transparent"></div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section id="features-section" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="px-4 py-2 bg-indigo-100 text-indigo-700 text-sm font-semibold rounded-3xl">POWERFUL FEATURES</span>
+                <h2 class="text-5xl font-semibold mt-4 tracking-tight">Everything your school needs in one place</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="card-hover glass border border-white/30 rounded-3xl p-8">
+                    <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl mb-6">
+                        📊
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-3">Instant Results &amp; Marksheets</h3>
+                    <p class="text-zinc-600">Real-time subject-wise marks, auto-calculated percentage, grade, and downloadable PDF marksheets.</p>
+                    <div class="mt-8 text-xs uppercase tracking-widest text-indigo-500 font-medium">Student + Teacher approved</div>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="card-hover glass border border-white/30 rounded-3xl p-8">
+                    <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center text-3xl mb-6">
+                        📅
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-3">Attendance Tracking</h3>
+                    <p class="text-zinc-600">Monthly &amp; subject-wise attendance with beautiful progress bars and parent notifications.</p>
+                    <div class="mt-8 text-xs uppercase tracking-widest text-purple-500 font-medium">Real-time updates</div>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="card-hover glass border border-white/30 rounded-3xl p-8">
+                    <div class="w-12 h-12 bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center text-3xl mb-6">
+                        📚
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-3">Digital Learning Hub</h3>
+                    <p class="text-zinc-600">Assignments, e-books, live classes, and AI-powered study recommendations.</p>
+                    <div class="mt-8 text-xs uppercase tracking-widest text-teal-500 font-medium">Modern education</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-zinc-900 text-white/80 py-16">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8">
+            <div>
+                <div class="flex items-center gap-x-3 mb-4">
+                    <div class="w-9 h-9 bg-white rounded-2xl flex items-center justify-center text-indigo-600 text-3xl">🏫</div>
+                    <h1 class="text-2xl font-semibold text-white" style="font-family: 'Space Grotesk', sans-serif;">Abhinav Public School</h1>
+                </div>
+                <p class="text-sm">Khandwa, Madhya Pradesh<br>Empowering minds since 2008</p>
+            </div>
+            <div>
+                <p class="uppercase text-xs mb-4 font-semibold">Quick Links</p>
+                <ul class="space-y-2 text-sm">
+                    <li>Academics</li>
+                    <li>Admissions 2026</li>
+                    <li>Faculty</li>
+                    <li>Gallery</li>
+                </ul>
+            </div>
+            <div>
+                <p class="uppercase text-xs mb-4 font-semibold">Portals</p>
+                <ul class="space-y-2 text-sm">
+                    <li onclick="showLoginModal('student')" class="cursor-pointer">Student Login</li>
+                    <li onclick="showLoginModal('teacher')" class="cursor-pointer">Teacher Login</li>
+                    <li>Parent Portal</li>
+                </ul>
+            </div>
+            <div>
+                <p class="uppercase text-xs mb-4 font-semibold">Contact</p>
+                <p class="text-sm">+91 7247553445</p>
+                <p class="text-sm">info@abhinavschool.edu.in</p>
+                <div class="flex gap-x-4 mt-6 text-2xl">
+                    <i class="fa-brands fa-facebook"></i>
+                    <i class="fa-brands fa-instagram"></i>
+                    <i class="fa-brands fa-youtube"></i>
+                </div>
+            </div>
+        </div>
+        <div class="text-center text-xs text-white/40 mt-16">© 2026 Abhinav Public School • Built as a complete modern web app</div>
+    </footer>
+
+    <!-- LOGIN MODALS -->
+    <!-- Student Login Modal -->
+    <div onclick="if(event.target.id === 'student-modal') hideModals()" id="student-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]">
+        <div onclick="event.stopImmediatePropagation()" class="modal w-full max-w-md mx-4 bg-white rounded-3xl shadow-2xl">
+            <div class="px-8 pt-8 pb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-x-3">
+                        <i class="fa-solid fa-user-graduate text-4xl text-indigo-600"></i>
+                        <div>
+                            <h2 class="text-3xl font-semibold">Student Login</h2>
+                            <p class="text-zinc-500 text-sm">Enter your Roll Number</p>
+                        </div>
+                    </div>
+                    <button onclick="hideModals()" class="text-3xl text-zinc-400 hover:text-zinc-600">×</button>
+                </div>
+                
+                <form id="student-login-form" onsubmit="handleLogin(event, 'student')">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="text-xs uppercase font-semibold text-zinc-500 block mb-2">Roll Number</label>
+                            <input id="student-username" type="text" placeholder="S001" required
+                                   class="w-full px-5 py-5 border border-zinc-200 focus:border-indigo-300 rounded-3xl outline-none text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs uppercase font-semibold text-zinc-500 block mb-2">Password</label>
+                            <input id="student-password" type="password" placeholder="••••••••" required
+                                   class="w-full px-5 py-5 border border-zinc-200 focus:border-indigo-300 rounded-3xl outline-none text-lg">
+                        </div>
+                        
+                        <button type="submit" 
+                                class="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-xl font-semibold rounded-3xl flex items-center justify-center gap-x-3">
+                            <span>Sign in to Student Portal</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        
+                        <p class="text-center text-xs text-zinc-400">Demo credentials: <span class="font-mono">S001 / student123</span></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Login Modal -->
+    <div onclick="if(event.target.id === 'teacher-modal') hideModals()" id="teacher-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]">
+        <div onclick="event.stopImmediatePropagation()" class="modal w-full max-w-md mx-4 bg-white rounded-3xl shadow-2xl">
+            <div class="px-8 pt-8 pb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-x-3">
+                        <i class="fa-solid fa-chalkboard-teacher text-4xl text-purple-600"></i>
+                        <div>
+                            <h2 class="text-3xl font-semibold">Teacher Login</h2>
+                            <p class="text-zinc-500 text-sm">Admin Access</p>
+                        </div>
+                    </div>
+                    <button onclick="hideModals()" class="text-3xl text-zinc-400 hover:text-zinc-600">×</button>
+                </div>
+                
+                <form id="teacher-login-form" onsubmit="handleLogin(event, 'teacher')">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="text-xs uppercase font-semibold text-zinc-500 block mb-2">Username</label>
+                            <input id="teacher-username" type="text" placeholder="admin" required
+                                   class="w-full px-5 py-5 border border-zinc-200 focus:border-purple-300 rounded-3xl outline-none text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs uppercase font-semibold text-zinc-500 block mb-2">Password</label>
+                            <input id="teacher-password" type="password" placeholder="••••••••" required
+                                   class="w-full px-5 py-5 border border-zinc-200 focus:border-purple-300 rounded-3xl outline-none text-lg">
+                        </div>
+                        
+                        <button type="submit" 
+                                class="w-full py-5 bg-gradient-to-r from-purple-600 to-violet-600 text-white text-xl font-semibold rounded-3xl flex items-center justify-center gap-x-3">
+                            <span>Access Teacher Dashboard</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        
+                        <p class="text-center text-xs text-zinc-400">Demo credentials: <span class="font-mono">admin / teacher123</span></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tailwind script initialization
+        function initTailwind() {
+            return {
+                config(userConfig = {}) {
+                    return {
+                        configUser: userConfig,
+                        theme: {
+                            extend: {},
+                        },
+                    }
+                },
+                theme(userConfig = {}) {
+                    return {
+                        ...this.defaultTheme(),
+                        ...userConfig,
+                    }
+                },
+                defaultTheme() {
+                    return {
+                        extend: {
+                            colors: {
+                                primary: '#4f46e5'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Show login modal
+        function showLoginModal(role) {
+            hideModals()
+            if (role === 'student') {
+                document.getElementById('student-modal').classList.remove('hidden')
+                document.getElementById('student-modal').classList.add('flex')
+            } else {
+                document.getElementById('teacher-modal').classList.remove('hidden')
+                document.getElementById('teacher-modal').classList.add('flex')
+            }
+        }
+        
+        function hideModals() {
+            const modals = document.querySelectorAll('.fixed.inset-0')
+            modals.forEach(modal => {
+                modal.classList.add('hidden')
+                modal.classList.remove('flex')
+            })
+        }
+        
+        // Handle login via API
+        async function handleLogin(e, role) {
+            e.preventDefault()
+            
+            const form = e.target
+            const username = role === 'student' 
+                ? document.getElementById('student-username').value 
+                : document.getElementById('teacher-username').value
+            const password = role === 'student' 
+                ? document.getElementById('student-password').value 
+                : document.getElementById('teacher-password').value
+            
+            const payload = { role, username, password }
+            
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                
+                const data = await res.json()
+                
+                if (data.success) {
+                    hideModals()
+                    window.location.href = data.redirect
+                } else {
+                    alert(data.message || 'Login failed. Try again.')
+                }
+            } catch (err) {
+                alert('Network error. Make sure Flask server is running.')
+            }
+        }
+        
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu')
+            menu.classList.toggle('hidden')
+        }
+        
+        // Toast notification helper
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div')
+            toast.className = `fixed bottom-6 right-6 px-6 py-4 rounded-3xl shadow-2xl flex items-center gap-x-3 text-white ${type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`
+            toast.innerHTML = `
+                ${type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-xmark"></i>'}
+                <span class="font-medium">${message}</span>
+            `
+            document.body.appendChild(toast)
+            setTimeout(() => {
+                toast.style.transform = 'translateY(100px)'
+                toast.style.opacity = '0'
+                setTimeout(() => toast.remove(), 300)
+            }, 3000)
+        }
+        
+        console.log('%c✅ Abhinav Public School homepage loaded with full glassmorphism + animations!', 'color:#4f46e5; font-size:13px; font-weight:600')
+    </script>
+</body>
+</html>
